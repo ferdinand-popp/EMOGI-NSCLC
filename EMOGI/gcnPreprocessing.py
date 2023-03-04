@@ -100,6 +100,7 @@ def cross_validation_sets(y, mask, folds):
         test_idx = label_idx[test]
         # construct y and mask for the two sets
         y_train, train_mask = get_y_from_indices(y, mask, train_idx)
+        y_train, train_mask, y_val, val_mask = train_test_split(y_train, train_mask, 0.2)
         y_test, test_mask = get_y_from_indices(y, mask, test_idx)
-        k_sets.append((y_train, y_test, train_mask, test_mask))
+        k_sets.append((y_train, y_val, y_test, train_mask, val_mask, test_mask))
     return k_sets
