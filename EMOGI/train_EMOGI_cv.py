@@ -113,7 +113,7 @@ def single_cv_run(session, support, num_supports, features, y_train, y_test, tra
     gcnIO.write_train_test_sets(model_dir, y_train, y_test, train_mask, test_mask)
     return test_performance
 
-def run_all_cvs(adj, features, y_train, y_val, y_test, train_mask, val_mask, test_mask, node_names,
+def run_all_cvs(adj, features, y, mask, node_names,
                 feature_names, args, output_dir):
     # preprocess features
     num_feat = features.shape[1]
@@ -130,22 +130,22 @@ def run_all_cvs(adj, features, y_train, y_val, y_test, train_mask, val_mask, tes
     support, num_supports = utils.get_support_matrices(adj, args['support'])
 
     # construct splits for k-fold CV
-    y_all = np.logical_or(y_train, y_val)
-    mask_all = np.logical_or(train_mask, val_mask)
-    k_sets = gcnPreprocessing.cross_validation_sets(y=y_all,
-                                                    mask=mask_all,
+    # y_all = np.logical_or(y_train, y_val)
+    # mask_all = np.logical_or(train_mask, val_mask)
+    k_sets = gcnPreprocessing.cross_validation_sets(y=y,
+                                                    mask=mask,
                                                     folds=args['cv_runs']
     )
 
     performance_measures = []
     for cv_run in range(args['cv_runs']):
         model_dir = os.path.join(output_dir, 'cv_{}'.format(cv_run))
-        y_tr, y_te, tr_mask, te_mask = k_sets[cv_run]
+        y_tr, y_va, y_te, tr_mask, va_mask, te_mask = k_sets[cv_run]
         with tf.Session() as sess:
-            val_performance = single_cv_run(sess, support, num_supports, features, y_tr,
+            test_performance = single_cv_run(sess, support, num_supports, features, y_tr,
                                             y_te, tr_mask, te_mask, node_names, feature_names,
                                             args, model_dir)
-            performance_measures.append(val_performance)
+            performance_measures.append(test_performance)
         tf.reset_default_graph()
     # save hyper Parameters
     data_rel_to_model = os.path.relpath(args['data'], output_dir)
@@ -166,10 +166,10 @@ if __name__ == "__main__":
     # load data and preprocess it
     input_data_path = args.data
     data = gcnIO.load_hdf_data(input_data_path, feature_name='features')
-    adj, features, y_train, y_val, y_test, train_mask, val_mask, test_mask, node_names, feature_names = data
+    adj, features, y, mask, node_names, feature_names = data
     print("Read data from: {}".format(input_data_path))
     
     args_dict = vars(args)
     print (args_dict)
-    run_all_cvs(adj, features, y_train, y_val, y_test, train_mask, val_mask, test_mask,
+    performance_measures = run_all_cvs(adj, features, y, mask,
                 node_names, feature_names, args_dict, output_dir)

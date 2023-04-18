@@ -1,0 +1,10 @@
+epochs	5000
+lr	0.001
+support	1
+hidden_dims	['300', '100']
+loss_mul	45.0
+decay	0.005
+dropout	0.5
+data	CPDB_multiomics.h5
+cv_runs	10
+CPDB_multiomics.h5

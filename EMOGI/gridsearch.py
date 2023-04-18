@@ -54,7 +54,7 @@ def run_model(session, params, adj, num_cv, features, y, mask, output_dir):
     )
     for cv_run in range(num_cv):
         # train model
-        y_train, y_val, train_mask, val_mask = k_sets[cv_run]
+        y_train, y_val, y_test, train_mask, val_mask, test_mask = k_sets[cv_run]
         model = fit_model(model=model,
                           sess=session,
                           features=features,
@@ -147,7 +147,7 @@ if __name__ == "__main__":
     cv_runs = args.cv_runs
     data = gcnIO.load_hdf_data(args.data,
                                feature_name='features')
-    adj, features, y_train, y_val, y_test, train_mask, val_mask, test_mask, node_names, feat_names = data
+    adj, features, y, mask, node_names, feat_names = data
     num_nodes = adj.shape[0]
     num_feat = features.shape[1]
 
@@ -205,7 +205,7 @@ if __name__ == "__main__":
 
             with tf.Session() as sess:
                 accs, losses, numpreds, auprs = run_model(sess, param_set, adj, 5,
-                                                        features, y_train, train_mask, param_dir)
+                                                        features, y, mask, param_dir)
             performance_dict = {'accuracy':accs, 'loss':losses,
                                 'num_predicted':numpreds, 'aupr':auprs}
             performances.append((accs, losses, numpreds, auprs, param_set))
