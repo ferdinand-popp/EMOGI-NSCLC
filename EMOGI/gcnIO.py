@@ -31,23 +31,26 @@ def load_hdf_data(path, network_name='network', feature_name='features'):
         network = f[network_name][:]
         features = f[feature_name][:]
         node_names = f['gene_names'][:]
-        y_train = f['y_train'][:]
-        y_test = f['y_test'][:]
-        if 'y_val' in f:
-            y_val = f['y_val'][:]
-        else:
-            y_val = None
-        train_mask = f['mask_train'][:]
-        test_mask = f['mask_test'][:]
-        if 'mask_val' in f:
-            val_mask = f['mask_val'][:]
-        else:
-            val_mask = None
+        y = f['y'][:]
+        mask = f['mask'][:]
+        # y_train = f['y_train'][:]
+        # y_test = f['y_test'][:]
+        # if 'y_val' in f:
+        #     y_val = f['y_val'][:]
+        # else:
+        #     y_val = None
+        # train_mask = f['mask_train'][:]
+        # test_mask = f['mask_test'][:]
+        # if 'mask_val' in f:
+        #     val_mask = f['mask_val'][:]
+        # else:
+        #     val_mask = None
         if 'feature_names' in f:
             feature_names = f['feature_names'][:]
         else:
             feature_names = None
-    return network, features, y_train, y_val, y_test, train_mask, val_mask, test_mask, node_names, feature_names
+    return network, features, y, mask, node_names, feature_names
+    # return network, features, y_train, y_val, y_test, train_mask, val_mask, test_mask, node_names, feature_names
 
 def write_hyper_params(args, input_file, file_name):
     """Write hyper parameters to disk.
@@ -116,7 +119,7 @@ def load_hyper_params(model_dir):
 
 
 def create_model_dir():
-    root_dir = '../data/GCN/training'
+    root_dir = '/results/'
     if not os.path.isdir(root_dir):  # in case training root doesn't exist
         os.mkdir(root_dir)
         print("Created Training Subdir")
@@ -129,8 +132,7 @@ def save_predictions(output_dir, node_names, predictions):
     with open(os.path.join(output_dir, 'predictions.tsv'), 'w') as f:
         f.write('ID\tName\tProb_pos\n')
         for pred_idx in range(predictions.shape[0]):
-            f.write('{}\t{}\t{}\n'.format(node_names[pred_idx, 0],
-                                            node_names[pred_idx, 1],
+            f.write('{}\t{}\n'.format(node_names[pred_idx],
                                             predictions[pred_idx, 0])
             )
 
